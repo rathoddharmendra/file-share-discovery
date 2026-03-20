@@ -1,22 +1,13 @@
-"""
-User-facing CLI entry point for running the Python enricher.
-
-This is a thin wrapper around the existing `main.py` orchestrator so the
-project can be executed as:
-
-  python -m isilon_discovery
-  python -m isilon_discovery.cli
-"""
+"""User-facing CLI entry point for running the Python enricher."""
 
 from __future__ import annotations
 
 import argparse
 import asyncio
 import logging
-import sys
 from typing import Optional
 
-from main import main as orchestrator_main  # type: ignore
+from isilon_discovery.orchestrator import main as orchestrator_main
 
 
 def run(inventory_path: str, target_node: Optional[str]) -> None:
@@ -45,4 +36,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

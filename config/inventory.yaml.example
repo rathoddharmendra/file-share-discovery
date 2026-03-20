@@ -1,0 +1,20 @@
+# Docker Compose inventory template.
+# Copy to config/inventory.yaml and edit nodes for your environment.
+
+nodes:
+  - name: isilon-prod-1
+    host: 192.168.10.10
+    port: 8080
+    access_zones:
+      - System
+      - Finance
+    share_types:
+      - smb
+      - nfs
+    enabled: true
+
+settings:
+  db_path: /workspace/data/shares.db
+  snapshot_dir: /workspace/data/snapshots
+  concurrency: 10
+  request_timeout_s: 30

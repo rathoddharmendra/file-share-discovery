@@ -1,4 +1,5 @@
-"""
-Web app (Flask) package wrapper.
-"""
+"""Flask web application package."""
 
+from webapp.app import create_app
+
+__all__ = ["create_app"]

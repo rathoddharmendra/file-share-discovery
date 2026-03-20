@@ -1,0 +1,95 @@
+name: file-share-discovery
+
+services:
+  db:
+    image: alpine:3.20
+    container_name: fsd-db
+    command: >-
+      sh -c "mkdir -p /workspace/data/snapshots &&
+             touch /workspace/data/shares.db &&
+             tail -f /dev/null"
+    volumes:
+      - discovery_data:/workspace/data
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /workspace/data/shares.db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - discovery_net
+
+  isilon:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    container_name: fsd-isilon
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ISILON_USERNAME: ${ISILON_USERNAME:-}
+      ISILON_PASSWORD: ${ISILON_PASSWORD:-}
+      ISILON_VERIFY_SSL: ${ISILON_VERIFY_SSL:-false}
+      INVENTORY_PATH: ${INVENTORY_PATH:-/workspace/config/inventory.yaml}
+    command: >-
+      sh -c "while true; do
+        python -m isilon_discovery --inventory ${INVENTORY_PATH:-/workspace/config/inventory.yaml};
+        sleep ${DISCOVERY_INTERVAL_SECONDS:-900};
+      done"
+    volumes:
+      - ./config:/workspace/config:ro
+      - discovery_data:/workspace/data
+    restart: unless-stopped
+    networks:
+      - discovery_net
+
+  webapp:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    container_name: fsd-webapp
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_PATH: /workspace/data/shares.db
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-dev-insecure-change-me}
+      AD_SERVER: ${AD_SERVER:-ldap://dc01.corp.local}
+      AD_DOMAIN: ${AD_DOMAIN:-CORP}
+      AD_BASE_DN: ${AD_BASE_DN:-DC=corp,DC=local}
+      AD_ADMIN_GROUP: ${AD_ADMIN_GROUP:-}
+    command: ["python", "-m", "flask", "--app", "webapp.app", "run", "--host", "0.0.0.0", "--port", "5000"]
+    ports:
+      - "5000:5000"
+    volumes:
+      - discovery_data:/workspace/data
+    restart: unless-stopped
+    networks:
+      - discovery_net
+
+  ps:
+    build:
+      context: .
+      dockerfile: docker/powershell/Dockerfile
+    container_name: fsd-ps
+    profiles: ["ps"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GRAPH_TENANT_ID: ${GRAPH_TENANT_ID:-}
+      GRAPH_CLIENT_ID: ${GRAPH_CLIENT_ID:-}
+      GRAPH_CLIENT_SECRET: ${GRAPH_CLIENT_SECRET:-}
+    command: ["-DbPath", "/workspace/data/shares.db", "-UseGraph"]
+    volumes:
+      - discovery_data:/workspace/data
+    networks:
+      - discovery_net
+
+volumes:
+  discovery_data:
+
+networks:
+  discovery_net:
+    driver: bridge
