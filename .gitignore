@@ -1,0 +1,26 @@
+# Python virtualenv / caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local runtime artifacts
+shares.db
+snapshots/
+*.db
+*.sqlite
+
+# Local user config (generated during setup)
+inventory.yaml
+
+# Environment files with secrets
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.cursor/
+

@@ -1,0 +1,10 @@
+httpx[asyncio]>=0.27.0
+python-dotenv>=1.0.0
+PyYAML>=6.0
+flask>=3.0.0
+flask-login>=0.6.3
+ldap3>=2.9.1
+pydantic>=2.0.0
+# msal>=1.28.0   # uncomment for hybrid Azure AD
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
