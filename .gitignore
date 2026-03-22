@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+*.arc
 
 # Local runtime artifacts
 shares.db
@@ -16,6 +17,7 @@ inventory.yaml
 # Environment files with secrets
 .env
 .env.*
+!.env.compose.example
 
 # OS / editor
 .DS_Store
@@ -23,4 +25,3 @@ Thumbs.db
 .vscode/
 .idea/
 .cursor/
-
